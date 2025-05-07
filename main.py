@@ -2,6 +2,7 @@ import pandas as pd
 from src.preprocessing import preprocess_data
 from src.model_selector import evaluate_models
 from src.evaluate import evaluate_on_test
+from src.tune_xgb import optimize_xgboost
 
 def load_data():
     path = "data/adults.csv"

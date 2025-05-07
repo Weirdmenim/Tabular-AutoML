@@ -47,7 +47,7 @@ Tabular-AutoML-from-Scratch/
 1. Clone the repo:
 
    ```bash
-   git clone https://github.com/your-username/Tabular-AutoML-from-Scratch.git
+   git clone https://github.com/Weirdmenim/Tabular-AutoML/Tabular-AutoML-from-Scratch.git
    cd Tabular-AutoML-from-Scratch
    ```
 
