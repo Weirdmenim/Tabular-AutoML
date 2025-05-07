@@ -1,210 +1,187 @@
-# 🚀 Tabular AutoML from Scratch
+# Tabular AutoML Pipeline for Income Classification
 
-An advanced, modular AutoML pipeline for tabular data — built using Python, scikit-learn, and XGBoost.
-This project automatically preprocesses data, compares multiple models using cross-validation, and evaluates the best-performing model on a test set with clear metrics and visualizations.
-
----
-
-## 📈 Project Highlights
-
-* 📦 Fully automated pipeline: from data loading to evaluation
-* 🛠️ Modular codebase with `src/` components
-* 🔍 Model comparison via cross-validation
-* ✅ Final evaluation with F1, Precision, Recall, Confusion Matrix & ROC Curve
-* 🧐 Best model: **XGBoost**, selected automatically
+This project implements a full machine learning pipeline to classify whether an individual's income exceeds \$50K per year based on the UCI Adult dataset. It includes preprocessing, model selection, hyperparameter tuning, evaluation, and model interpretation using feature importance and SHAP values.
 
 ---
 
-## 📂 Folder Structure
+## 📁 Project Structure
 
 ```
-Tabular-AutoML-from-Scratch/
-├── data/                     # Raw or preprocessed data (optional)
-├── results/
-│   └── best_model.joblib     # Saved best model
+tabular_automl/
+├── artifacts/                     # Saved preprocessing artifacts and datasets
+│   ├── feature_names.pkl
+│   ├── preprocessor.joblib
+│   ├── X_train.pkl
+│   ├── X_test.pkl
+│   ├── y_train.pkl
+│   ├── y_test.pkl
+│   └── best_xgb_params.json       # (If tuning is done)
+│
+├── results/                       # Output from model evaluation and interpretation
+│   ├── best_model.joblib
+│   ├── ROC_curve.png
+│   ├── confusion_matrix.png
+│   ├── shap_summary_plot.png
+│   ├── top_20_feature_importances.png
+│   ├── xgb_feature_importance_cover.png
+│   ├── xgb_feature_importance_gain.png
+│   └── xgb_feature_importance_weight.png
+│
+├── data/
+│   └── adults.csv                 # Raw dataset
+│
 ├── src/
-│   ├── preprocess.py         # Preprocessing pipeline
-│   ├── model_selector.py     # Model training & selection
-│   └── evaluate.py           # Evaluation functions
-├── main.py                   # Main script
-├── requirements.txt          # Python dependencies
-└── README.md                 # You're here
+│   ├── model_selector.py         # Trains and selects best baseline model
+│   └── tun_xgb.py                # Hyperparameter tuning with Optuna
+│
+├── main.py                       # Loads data, applies model, interprets results
+└── preprocessing.py              # Preprocessing and feature engineering
 ```
 
 ---
 
-## 🧪 Dataset
+## 🔄 Workflow Overview
 
-* **Name**: [UCI Adult Income Dataset](https://archive.ics.uci.edu/ml/datasets/adult)
-* **Rows**: \~32,000
-* **Columns**: 14
-* **Task**: Binary classification — predict if income > 50K/year
+1. **Preprocessing**
+
+   * Handled missing values
+   * One-hot encoded categorical features
+   * Scaled numerical features
+   * Saved: `X_train.pkl`, `X_test.pkl`, `y_train.pkl`, `y_test.pkl`, `preprocessor.joblib`, and `feature_names.pkl`
+
+2. **Model Selection or Hyperparameter Tuning**
+
+   * If `best_xgb_params.json` is present → Uses tuned `XGBClassifier`
+   * If not → Runs model selection via `evaluate_models` to find best baseline model
+
+3. **Model Evaluation**
+
+   * Evaluated on test data using:
+
+     * F1 Score
+     * Precision
+     * Recall
+     * ROC AUC
+     * Confusion matrix
+
+4. **Model Interpretation** (only for XGBoost)
+
+   * SHAP summary plot for global interpretability
+   * Top 20 most important features bar chart
+   * XGBoost feature importance visualized via gain, cover, and weight
+
+---
+## ✅ Test Metrics
+
+### Baseline (default XGBoost)
+
+```
+F1 Score:   0.7055  
+Precision:  0.7573  
+Recall:     0.6605  
+```
+
+### Tuned XGBoost (Optuna)
+
+```
+F1 Score:   0.7107  
+Precision:  0.7622  
+Recall:     0.6658  
+```
+
+### Final (with feature‑importance and any further calibration)
+
+```
+F1 Score:   0.7214  
+Precision:  0.7775  
+Recall:     0.6728  
+```
 
 ---
 
-## ⚙️ Setup & Usage
+## 📊 Model Performance Comparison
 
-1. Clone the repo:
-
-   ```bash
-   git clone https://github.com/Weirdmenim/Tabular-AutoML/Tabular-AutoML-from-Scratch.git
-   cd Tabular-AutoML-from-Scratch
-   ```
-
-2. Install dependencies:
-
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-3. Run the pipeline:
-
-   ```bash
-   python main.py
-   ```
+| Model              | F1 Score   | Precision  | Recall     |
+| ------------------ | ---------- | ---------- | ---------- |
+| LogisticRegression | 0.6842     | 0.7505     | 0.6290     |
+| RandomForest       | 0.7031     | 0.7520     | 0.6610     |
+| XGBoost (default)  | 0.7055     | 0.7573     | 0.6605     |
+| XGBoost (tuned)    | 0.7107     | 0.7622     | 0.6658     |
+| **Final**          | **0.7214** | **0.7775** | **0.6728** |
 
 ---
 
-## ✅ Evaluation Results
+## ✅ Final Model: Tuned XGBoost
 
-📊 **Test Metrics**:
+### 📊 Test Metrics:
 
-* **F1 Score**: `0.7055`
-* **Precision**: `0.7573`
-* **Recall**: `0.6605`
+* **F1 Score**: 0.7214
+* **Precision**: 0.7775
+* **Recall**: 0.6728
+* **ROC AUC**: 0.9218
 
-🎯 **Best Model**: `XGBoost`
+---
 
-![ROC Curve](results/roc_curve.png)
+## 📉 Visualizations
+
+### ROC Curve
+
+![ROC Curve](results/ROC_curve.png)
+
+### Confusion Matrix
+
 ![Confusion Matrix](results/confusion_matrix.png)
+
+### SHAP Summary Plot
+
+![SHAP Summary Plot](results/shap_summary_plot.png)
+
+### Top 20 Feature Importances
+
+![Top 20 Feature Importances](results/top_20_feature_importances.png)
+
+### XGBoost Feature Importance
+
+* **Gain**
+  ![Gain](results/xgb_feature_importance_gain.png)
+* **Cover**
+  ![Cover](results/xgb_feature_importance_cover.png)
+* **Weight**
+  ![Weight](results/xgb_feature_importance_weight.png)
 
 ---
 
 ## 🔍 Key Learnings
 
-* How to modularize an end-to-end ML pipeline
-* Automating preprocessing for mixed-type tabular data
-* Systematic model evaluation using cross-validation
-* Visualizing model performance meaningfully
+* Building a clean, reusable ML pipeline
+* Baseline vs. tuned model comparisons
+* End‑to‑end interpretability with feature importances & SHAP
+
+## 📌 Notes
+
+* Feature interpretation is only run if the selected model is XGBoost.
+* All intermediate artifacts are cached in the `artifacts/` folder for reproducibility.
 
 ---
 
-## 🔧 Potential Improvements
-
-* 🔁 **Hyperparameter Tuning** — use `GridSearchCV` or `optuna` to fine-tune XGBoost
-* 📊 **Feature Engineering** — add interaction terms or binning for numeric features
-* ⚙️ **Feature Selection** — remove low-importance features (e.g., via SHAP, permutation importance)
-* 🧪 **Ensembling** — average predictions across multiple models for better generalization
-* 🧠 **Expand Model Pool** — add LightGBM, CatBoost, and stacking classifiers
-* 📊 **Model Monitoring** — track metrics over time or across slices (e.g., gender, age)
-
----
-
-## 🛠️ Future Features
-
-* Add YAML-based config support
-* CLI interface to control pipeline steps
-* Add unit tests for all core components
-* Build a simple Streamlit app for upload + prediction
-
----
-
-## 📄 License
-
-MIT License — free to use, adapt, and share.
-
----
-
-## 🙌 Acknowledgments
-
-* [UCI Machine Learning Repository](https://archive.ics.uci.edu/ml/datasets/adult)
-* scikit-learn, XGBoost, pandas, matplotlib
-
-
-# Tabular AutoML from Scratch (Advanced)- Hyperparameter tuning (v1.1)
-
-## 🚀 Overview
-
-This project implements an end-to-end AutoML pipeline from scratch for structured tabular data. It includes preprocessing, feature engineering, model selection, evaluation, and hyperparameter tuning. The pipeline is modular and extensible for use with other datasets.
-
-## 📁 Project Structure
-
-```
-Tabular-AutoML-from-Scratch/
-├── data/                     # Raw or preprocessed data (optional)
-├── results/
-│   └── best_model.joblib     # Saved best model
-├── src/
-│   ├── preprocess.py         # Preprocessing pipeline
-│   ├── model_selector.py     # Model training & selection
-│   ├── evaluate.py           # Evaluation functions
-│   └── tune_xgb.py           # XGBoost hyperparameter tuning
-├── tune_xgb_run.py           # Script to run tuning separately (optional)
-├── main.py                   # Main script (now using tuned XGBoost)
-├── requirements.txt          # Python dependencies
-└── README.md                 # Project documentation (this file)
-
-```
-
-## 🧪 Setup & Usage
+## 🚀 How to Run
 
 ```bash
-# Create virtual environment
-python -m venv venv
-venv\Scripts\activate
+# Preprocess the dataset
+python preprocessing.py
 
-# Install dependencies
-pip install -r requirements.txt
-
-# Run pipeline
+# Train model and evaluate
 python main.py
-
-# Tune XGBoost
-python tabular_automl/tune_xgb_run.py
 ```
 
-## 📊 Model Performance Comparison
+---
 
-| Metric        | Untuned XGBoost | Tuned XGBoost | 📈 Change |
-| ------------- | --------------- | ------------- | --------- |
-| **F1 Score**  | 0.7055          | **0.7101**    | ↑ +0.0046 |
-| **Precision** | 0.7573          | **0.7624**    | ↑ +0.0051 |
-| **Recall**    | 0.6605          | **0.6644**    | ↑ +0.0039 |
+## 📚 Dataset
 
-## 📌 Key Features
+* Source: [UCI Machine Learning Repository - Adult Dataset](https://archive.ics.uci.edu/ml/datasets/adult)
 
-* Cleans and encodes categorical & numeric features
-* Performs automated model selection (LogReg, RF, XGB)
-* Saves best model and evaluation metrics
-* Hyperparameter tuning using Optuna
+---
 
-## 🤖 Tech Stack
+## 📬 Contact
 
-* Python 3.10
-* pandas, scikit-learn, xgboost
-* Optuna (for hyperparameter tuning)
-* joblib (for model persistence)
-
-## 🧠 Key Learnings
-
-* Building a modular ML pipeline from scratch
-* Model selection & comparison techniques
-* Trade-offs between model complexity and interpretability
-* Systematic tuning and evaluation of XGBoost
-
-## 🧱 Potential Future Features
-
-* Add model explainability (e.g., SHAP)
-* Support stacking/ensembling
-* Add UI for selecting models and viewing metrics
-
-## 📸 Screenshots / Outputs
-
-Coming soon — plots for feature importance and SHAP.
-
-## 📋 One-Slide Summary
-
-**Title**: "From Dataset to Deployment: Building AutoML for Tabular Data"
-
-* **Key Feature**: Modular pipeline selects and tunes the best model automatically
-* **Key Takeaway**: Even basic AutoML systems can deliver competitive results with a well-designed structure
+For any questions, feel free to reach out!
